@@ -1,0 +1,271 @@
+<?php
+
+/**
+ * @file
+ *  Contains Drupal hooks and helpers
+ */
+
+/**
+ * Implementation of perms() hook.
+ */
+function ihf_perm() {
+  return array(
+    'access ihf settings' => array(
+      'title' => t('Access IHF Settings'),
+      'description' => t('Administer the Itomic helper functions module'),
+    ),
+  );
+}
+
+/**
+ * Implement hook_menu
+ */
+function ihf_menu() {
+  // Adding menu tabs on node pages which redirect to the "Manage Fields", 
+  // "Manage Display" and "Edit Content Type" pages disable by setting 
+  // $conf['ihf_node_type_tabs'] = FALSE; in settings.php
+  //
+  // @author Nigel Heap <nigel@itomic.com.au>
+  // @data   21/2/2012
+  $menu = array();
+  if (variable_get('ihf_node_type_tabs', TRUE)) {
+    $tabs = array(
+      'type' => 'Edit content type',
+      'fields' => 'Manage fields',
+      'display' => 'Manage display',
+    );
+    $weight = 0;
+    foreach ($tabs as $id => $title) {
+      $menu['node/%node/view/ihf-'. $id] = array(
+        'type' => MENU_LOCAL_TASK,
+        'title' => $title,
+        'title callback' => 'ihf_node_type_tabs_title',
+        'title arguments' => array($id, 1),
+        'page callback' => 'ihf_node_type_tabs_page',
+        'page arguments' => array($id, 1),
+        'access arguments' => array('administer content types'),
+        'weight' => $weight,
+        'file' => 'ihf.pages.inc',
+      );
+      $weight++;
+    }
+  }
+  return $menu;
+}
+
+/**
+ * Implement hook_init
+ */
+function ihf_init() {
+  // Adding a JS snippet which auto-focuses on the username form element on login 
+  // pages. Set $conf['ihf_login_focus'] = FALSE in settings.php to disable.
+  // @author Nick Santamaria <nick@itomic.com.au>
+  // @date   21st February 2012
+  if (variable_get('ihf_login_focus', TRUE)) {
+    drupal_add_js(drupal_get_path('module', 'ihf') .'/ihf.login-focus.js');
+  }
+}
+
+/**
+ * Function similar to Drupal Core's arg() function but which uses the request_uri rather than $_GET[q]
+ * 
+ * $_SERVER['REQUEST_URI'] respects mod_rewrite's originally requested 
+ * path, so makes it easier to do path matching. Note that we disregard
+ * any GET query strings in the URL.
+ * 
+ * @author Nick Santamaria <nick@itomic.com.au>
+ * 
+ * @param int $arg
+ *  Segment to return
+ * @return mixed
+ *  - string: Segment from request_uri if it exists and parameter is provided
+ *  - bool: FALSE if non-existant segment is requested
+ *  - array: Exploded request string. Same as calling arg() without parameters
+ */
+function ihf_request_arg($arg = NULL){
+  $uri = $_SERVER['REQUEST_URI'];
+  $url = parse_url($uri);
+  $segments = explode('/', trim($url['path'], '/'));
+  if (!is_null($arg)) {
+    return $segments;
+  }
+  return (!empty($segments) && isset($segments[$arg])) ? $segments[$arg] : FALSE;
+}
+
+/**
+ * Matches an array of paths against the current path and checks if they match
+ * 
+ * @author Nick Santamaria <nick@itomic.com.au>
+ * 
+ * @param mixed $paths
+ *  An array of paths to compare against the current path.
+ *  - Can use system paths
+ *  - Can use path aliases
+ *  - Can use wildcards on both the above options: news/*, node/* /edit etc..
+ * @return bool
+ *  TRUE: Current page is one of the items in $paths argument.
+ *  FALSE: Current page is not in the $paths argument.
+ */
+function ihf_match_path($paths) {
+  // Statically cache the current system path and alias as the alias 
+  // causes a database hit
+  static $current_path;
+  static $current_alias;
+  if (is_null($current_path)) $current_path = drupal_strtolower($_GET['q']);
+  if (is_null($current_alias)) $current_path = drupal_strtolower(drupal_get_path_alias($current_path));
+  
+  // Make sure the $paths argument is an array. User may also have passed
+  // a string with new lines for each path, which we can accommodate for
+  // easily.
+  if (is_string($paths)) {
+    $paths = explode("\n", $paths);
+  }
+  
+  $pages = drupal_strtolower(implode("\n", $paths));
+  $page_match = FALSE;
+  
+  // We check the alias first because globalredirect module will always put us there first. Usually.
+  $page_match = drupal_match_path($current_alias, $pages);
+  
+  // Check the system path if the last test failed and the current path is not an alias
+  if (!$page_match && ($current_path != $current_alias)) {
+    $page_match = drupal_match_path($current_path, $pages);
+  }
+  
+  return $page_match;
+}
+
+/**
+ * Helps us build up a URL using the passed $request_uri with a new query 
+ * parameter without breaking any existing variables (path, query string, anchors etc..)
+ *
+ * @author Nick Santamaria <nick@itomic.com.au>
+ * @param array $new_queries
+ *  Associative array of query_key => query_value
+ * @param string $request_uri
+ *  Current Request URI 
+ * @return array
+ *  New URL in parse_url format. To create a valid URL, pass the return value through url();
+ */
+function ihf_modify_current_url_query($new_queries, $request_uri = NULL) {
+  if (is_null($request_uri)) {
+    $request_uri = $_SERVER['REQUEST_URI'];
+  }
+  $url = parse_url(trim($request_uri, '/'));
+
+  $query_arr = array();
+  if (!empty($url['query'])) {
+    parse_str($url['query'], $query_arr);
+  }
+  foreach ($new_queries as $query_key => $query_val) {
+    $query_arr[$query_key] = $query_val;
+  }
+  
+  foreach ($query_arr as $key => $val) {
+    if (!empty($val) || $val === 0) {
+      $arr[$key] =  $val;
+    }
+  }
+  
+  $return = array(
+    'path' => drupal_get_normal_path($url['path']),
+    'query' => (is_array($arr)) ? $arr : array(),
+    'fragment' => (isset($url['fragment'])) ? $url['fragment'] : '',
+  );
+  return $return;
+}
+
+/**
+ * Recursively traverses a form array and returns an array of form-element 
+ * array keys in order of ancestry.
+ * 
+ * A use case for this function would be if you needed to locate every 
+ * select element in a deeply nested form array, in order to add a blank 
+ * option to each of them.
+ * 
+ * @author Nick Santamaria <nick@itomic.com.au>
+ * @param array $form
+ *   Form array. Usually passed from a form_alter hook
+ * @param string $type
+ *   Element type to return. See http://api.drupal.org/api/drupal/developer--topics--forms_api_reference.html/7#type
+ * @return array $ret
+ *   An array of arrays with each located element's ancestry
+ */
+function ihf_form_find_type_element($form, $type) {
+  $ret = array();
+  foreach (element_children($form) as $key) {
+    $keys = array();
+    if (ihf_form_find_type_element_recurse($form[$key], $type, $key, $keys)) {
+      $ret[] = array_reverse($keys);
+    }
+  }
+  
+  return $ret;
+}
+
+/**
+ * Recursive helper function to ihf_form_find_type_element()
+ */
+function ihf_form_find_type_element_recurse($element, $type, $parent_key, &$keys) {
+  if (isset($element['#type']) && $element['#type'] == $type) {
+    $keys[] = $parent_key;
+    return TRUE;
+  }
+  foreach (element_children($element) as $key) {
+    if (is_array($element[$key]) && ihf_form_find_type_element_recurse($element[$key], $type, $key, $keys)) {
+      $keys[] = $parent_key;
+      return TRUE;
+    }
+  }
+  
+  return FALSE;
+}
+
+/**
+ * Finds a taxonomy vocabulary object from the machine name
+ * 
+ * @author Nick Santamaria <nick@itomic.com.au>
+ * @param string $machine_name
+ *  Machine name of vocabulary
+ * @return mixed 
+ *  stdClass: Vocabulary object
+ *  bool: FALSE if vocab does not exist
+ */
+function ihf_taxonomy_get_vocabulary_by_name($machine_name) {
+  static $vocabs = array();
+  if (empty($vocabs)) {
+    foreach (taxonomy_vocabulary_load_multiple(FALSE) AS $vocab) {
+      $vocabs[$vocab->machine_name] = $vocab;
+    }
+  }
+  return (isset($vocabs[$machine_name])) ? $vocabs[$machine_name] : FALSE;
+}
+
+/**
+ * Render a Ctools custom content pane.
+ * 
+ * Mostly useful for when you need to render custom content panes 
+ * outside of panels.
+ * 
+ * @author Nick Santamaria <nick@itomic.com.au>
+ * @date 13/3/2012
+ * @param $id
+ *  Custom content pane machine name.
+ * @param bool $render (optional)
+ *  Whether to render the pane.
+ *   TRUE:  Renders the pane, return value is markup as a string
+ *   FALSE: Returns the $content object, which has the title, content and 
+ *          other information attached
+ * @return
+ *  Rendered custom content pane, or $content object
+ */
+function ihf_render_custom_content_pane($id, $render = TRUE) {
+  ctools_include('content');
+  $content = ctools_content_render('custom', $id, array('name' => $id));
+  if ($render) {
+    return (empty($content)) ? FALSE : theme('panels_pane', array('content' => $content, 'pane' => NULL, 'display' => NULL));
+  }
+  else {
+    return $content;
+  }
+}

@@ -1,0 +1,13 @@
+<?php
+
+/**
+ * @file
+ *  Cool panels layouts, styles and other various panels plugins.
+ */
+
+/**
+ * Implement hook_panels_ctools_plugin_directory
+ */
+function ihf_panels_ctools_plugin_directory($module, $plugin) {
+  return 'plugins/'. $plugin;
+}

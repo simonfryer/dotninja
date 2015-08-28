@@ -1,0 +1,113 @@
+<?php
+/**
+ * Implements hook_install().
+ *
+ * Perform actions to set up the site for this profile.
+ */
+function itomic_kickstart_install() {
+  // Enable some itomic_kickstart blocks.
+  $default_theme = 'zen';
+  $admin_theme = 'adminimal';
+  // disable all themes
+  db_update('system')
+    ->fields(array('status' => 0))
+    ->condition('type', 'theme')
+    ->execute();
+  // enable $default_theme
+  db_update('system')
+    ->fields(array('status' => 1))
+    ->condition('type', 'theme')
+    ->condition('name', $default_theme)
+    ->execute();
+  // enable $admin_theme
+  db_update('system')
+    ->fields(array('status' => 1))
+    ->condition('type', 'theme')
+    ->condition('name', $admin_theme)
+    ->execute();
+  variable_set('theme_default', $default_theme);
+  variable_set('admin_theme', $admin_theme);
+  // activate admin theme when editing a node
+  variable_set('node_admin_theme', '1');
+  
+  // Add text formats.
+  $controlled_html_format = array(
+    'format' => 'controlled_html',
+    'name' => 'Controlled HTML',
+    'weight' => 0,
+    'filters' => array(
+      // URL filter.
+      'filter_url' => array(
+        'weight' => 0,
+        'status' => 1,
+      ),
+      // HTML filter.
+      'filter_html' => array(
+        'weight' => 1,
+        'status' => 1,
+      ),
+      // Line break filter.
+      'filter_autop' => array(
+        'weight' => 2,
+        'status' => 1,
+      ),
+      // HTML corrector filter.
+      'filter_htmlcorrector' => array(
+        'weight' => 10,
+        'status' => 1,
+      ),
+    ),
+  );
+  $controlled_html_format = (object) $controlled_html_format;
+  filter_format_save($controlled_html_format);
+
+  $full_html_format = array(
+    'format' => 'full_html',
+    'name' => 'Full HTML',
+    'weight' => 1,
+    'filters' => array(
+      // URL filter.
+      'filter_url' => array(
+        'weight' => 0,
+        'status' => 1,
+      ),
+      // Line break filter.
+      'filter_autop' => array(
+        'weight' => 1,
+        'status' => 1,
+      ),
+      // HTML corrector filter.
+      'filter_htmlcorrector' => array(
+        'weight' => 10,
+        'status' => 1,
+      ),
+    ),
+  );
+  $full_html_format = (object) $full_html_format;
+  filter_format_save($full_html_format);
+
+  // Create a default role for site administrators, with all available permissions assigned.
+  $admin_role = new stdClass();
+  $admin_role->name = 'administrator';
+  $admin_role->weight = 10;
+  user_role_save($admin_role);
+  user_role_grant_permissions($admin_role->rid, array_keys(module_invoke_all('permission')));
+  // Set this as the administrator role.
+  variable_set('user_admin_role', $admin_role->rid);
+
+  // Assign user 1 the "administrator" role.
+  db_insert('users_roles')
+    ->fields(array('uid' => 1, 'rid' => $admin_role->rid))
+    ->execute();
+  // Update the menu router information.
+  menu_rebuild();
+  // revert features to ensure they are all installed
+  $features = array(
+    'better_find_content'
+  );
+  features_revert($features);
+  // ignore any rebuild messages
+  node_access_needs_rebuild(FALSE);
+  // ignore any other install messages
+  drupal_get_messages();
+}

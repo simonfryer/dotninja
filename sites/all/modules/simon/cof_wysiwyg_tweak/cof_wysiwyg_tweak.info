@@ -1,0 +1,6 @@
+name = COF WYSIWYG tweaks
+description = Help the WYSIWYG module along a bit
+core = 7.x
+package = COF
+
+

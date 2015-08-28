@@ -1,0 +1,206 @@
+; Packaging information for itomic_kickstart
+name = "Itomic Kickstart"
+description = "Provides best case modules for a decent start to a Drupal 7 install"
+exclusive = "1"
+core = "7.x"
+; ----------
+; Dependencies
+; ----------
+; Administration
+dependencies[] = admin_menu
+dependencies[] = adminimal_admin_menu
+dependencies[] = module_filter
+; Chaos tool suite
+dependencies[] = ctools
+; Context
+dependencies[] = context
+dependencies[] = context_ui
+; Core
+dependencies[] = block
+dependencies[] = coffee
+dependencies[] = comment
+dependencies[] = dashboard
+dependencies[] = field
+dependencies[] = field_sql_storage
+dependencies[] = field_ui
+dependencies[] = file
+dependencies[] = filter
+dependencies[] = help
+dependencies[] = image
+dependencies[] = list
+dependencies[] = menu
+dependencies[] = node
+dependencies[] = number
+dependencies[] = options
+dependencies[] = path
+dependencies[] = search
+dependencies[] = shortcut
+dependencies[] = system
+dependencies[] = taxonomy
+dependencies[] = text
+dependencies[] = update
+dependencies[] = user
+; Custom breadcrumbs
+dependencies[] = custom_breadcrumbs
+dependencies[] = custom_breadcrumbs_paths
+dependencies[] = custom_breadcrumbs_taxonomy
+dependencies[] = custom_breadcrumbs_views
+dependencies[] = custom_breadcrumbsapi
+; Date/Time
+dependencies[] = date
+dependencies[] = date_all_day
+dependencies[] = date_api
+dependencies[] = date_context
+dependencies[] = date_popup
+dependencies[] = date_repeat
+dependencies[] = date_repeat_field
+dependencies[] = date_tools
+dependencies[] = date_views
+; Feeds
+;dependencies[] = feeds
+;dependencies[] = feeds_tamper
+;dependencies[] = feeds_tamper_ui
+;dependencies[] = feeds_ui
+; Fields
+dependencies[] = advanced_link
+dependencies[] = entityreference
+dependencies[] = field_collection
+dependencies[] = field_group
+dependencies[] = link
+dependencies[] = term_reference_tree
+; Media
+dependencies[] = file_admin
+dependencies[] = file_entity
+dependencies[] = media
+dependencies[] = media_internet
+dependencies[] = media_wysiwyg
+dependencies[] = media_wysiwyg_view_mode
+dependencies[] = media_youtube
+; Other
+dependencies[] = architecture
+dependencies[] = entity
+dependencies[] = entity_token
+dependencies[] = job_scheduler
+dependencies[] = libraries
+dependencies[] = linkit
+dependencies[] = masquerade
+dependencies[] = menu_attributes
+dependencies[] = menu_block
+dependencies[] = pathauto
+dependencies[] = redirect
+dependencies[] = token
+; Statistics
+dependencies[] = googleanalytics
+; UUID
+dependencies[] = uuid
+; User interface
+dependencies[] = better_messages
+dependencies[] = ckeditor_link
+dependencies[] = jquery_update
+dependencies[] = wysiwyg
+; Views
+dependencies[] = better_exposed_filters
+dependencies[] = draggableviews
+dependencies[] = views
+dependencies[] = views_bulk_operations
+dependencies[] = views_ui
+; Webform
+dependencies[] = webform
+; Features
+dependencies[] = features
+dependencies[] = better_find_content
+
+; ----------
+; Variables
+; ----------
+variables[admin_theme] = 'adminimal'
+variables[anonymous] = 'Anonymous'
+variables[cache_class_cache_ctools_css] = 'CToolsCssCache'
+variables[comment_webform] = '0'
+variables[context_block_rebuild_needed] = true
+variables[date_api_version] = '7.2'
+variables[date_default_timezone] = 'Australia/Perth'
+variables[date_first_day] = '1'
+variables[date_format_long] = 'l, j F, Y - H:i'
+variables[date_format_medium] = 'D, d/m/Y - H:i'
+variables[date_format_short] = 'd/m/Y - H:i'
+variables[date_views_day_format_without_year] = 'l, F j'
+variables[date_views_day_format_with_year] = 'l, F j, Y'
+variables[date_views_month_format_without_year] = 'F'
+variables[date_views_month_format_with_year] = 'F Y'
+variables[date_views_week_format_without_year] = 'F j'
+variables[date_views_week_format_with_year] = 'F j, Y'
+variables[entityreference:base-tables][comment][0] = 'comment'
+variables[entityreference:base-tables][comment][1] = 'cid'
+variables[entityreference:base-tables][field_collection_item][0] = 'field_collection_item'
+variables[entityreference:base-tables][field_collection_item][1] = 'item_id'
+variables[entityreference:base-tables][node][0] = 'node'
+variables[entityreference:base-tables][node][1] = 'nid'
+variables[entityreference:base-tables][redirect][0] = 'redirect'
+variables[entityreference:base-tables][redirect][1] = 'rid'
+variables[entityreference:base-tables][file][0] = 'file_managed'
+variables[entityreference:base-tables][file][1] = 'fid'
+variables[entityreference:base-tables][taxonomy_term][0] = 'taxonomy_term_data'
+variables[entityreference:base-tables][taxonomy_term][1] = 'tid'
+variables[entityreference:base-tables][taxonomy_vocabulary][0] = 'taxonomy_vocabulary'
+variables[entityreference:base-tables][taxonomy_vocabulary][1] = 'vid'
+variables[entityreference:base-tables][user][0] = 'users'
+variables[entityreference:base-tables][user][1] = 'uid'
+variables[entityreference:base-tables][wysiwyg_profile][0] = 'wysiwyg'
+variables[entityreference:base-tables][wysiwyg_profile][1] = 'format'
+variables[features_admin_menu_links_menus][features] = 'features'
+variables[features_admin_menu_links_menus][main-menu] = 'main-menu'
+variables[features_admin_menu_links_menus][management] = 'management'
+variables[features_admin_menu_links_menus][navigation] = 'navigation'
+variables[features_admin_menu_links_menus][user-menu] = 'user-menu'
+variables[features_admin_show_component_context] = 1
+variables[features_admin_show_component_ctools] = 1
+variables[features_admin_show_component_dependencies] = 1
+variables[features_admin_show_component_feeds_importer] = 1
+variables[features_admin_show_component_feeds_tamper] = 1
+variables[features_admin_show_component_field_base] = 1
+variables[features_admin_show_component_field_group] = 1
+variables[features_admin_show_component_field_instance] = 1
+variables[features_admin_show_component_file_display] = 1
+variables[features_admin_show_component_file_type] = 1
+variables[features_admin_show_component_filter] = 1
+variables[features_admin_show_component_image] = 1
+variables[features_admin_show_component_linkit_profiles] = 1
+variables[features_admin_show_component_menu_custom] = 1
+variables[features_admin_show_component_menu_links] = 1
+variables[features_admin_show_component_node] = 1
+variables[features_admin_show_component_taxonomy] = 1
+variables[features_admin_show_component_user_permission] = 1
+variables[features_admin_show_component_user_role] = 1
+variables[features_admin_show_component_uuid_entities] = 1
+variables[features_admin_show_component_views_view] = 1
+variables[features_admin_show_component_wysiwyg] = 1
+variables[features_default_export_path] = 'sites/all/modules/features'
+variables[features_lock_mode] = 'all'
+variables[features_rebuild_on_flush] = 1
+variables[filter_fallback_format] = 'plain_text'
+variables[job_scheduler_rebuild_all] = true
+variables[jquery_update_compression_type] = 'min'
+variables[jquery_update_jquery_cdn] = 'none'
+variables[jquery_update_jquery_migrate_cdn] = 'none'
+variables[jquery_update_jquery_version] = '1.10'
+variables[jquery_update__active_tab] = 'edit-themes'
+variables[media_icon_base_directory] = 'public://media-icons'
+variables[node_admin_theme] = 1
+variables[pathauto_blog_pattern] = 'blogs/[user:name]'
+variables[pathauto_file_pattern] = 'file/[file:name]'
+variables[pathauto_forum_pattern] = '[term:vocabulary]/[term:name]'
+variables[pathauto_node_pattern] = '[node:menu-link:parents:join-path]/[node:title]'
+variables[pathauto_punctuation_hyphen] = 1
+variables[pathauto_taxonomy_term_pattern] = '[term:vocabulary]/[term:name]'
+variables[pathauto_user_pattern] = 'users/[user:name]'
+variables[theme_default] = 'zen'
+variables[user_cancel_method] = 'user_cancel_block'
+variables[user_default_timezone] = '0'
+variables[user_email_verification] = 1
+variables[user_picture_dimensions] = '85x85'
+variables[user_picture_file_size] = '30'
+variables[user_picture_path] = 'pictures'
+variables[user_register] = '0'
+variables[webform_node_webform] = true
+

@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Better find content feature.
+ */
+
+include_once 'better_find_content.features.inc';

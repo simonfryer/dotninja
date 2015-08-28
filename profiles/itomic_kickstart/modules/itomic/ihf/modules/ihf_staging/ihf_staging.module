@@ -1,0 +1,269 @@
+<?php
+
+/**
+ * @file
+ *  Contains Drupal hooks and helpers
+ */
+
+define('IHF_STAGING_DEFAULT_DOMAIN', 'itomicpowered.com');
+define('IHF_STAGING_DEFAULT_PASSPHRASE', 'test');
+
+/**
+ * menu hook implementation
+ *
+ * @return array
+ */
+function ihf_staging_menu() {
+  $menu['admin/config/system/ihf'] = array (
+    'title' => 'Itomic Hosting Settings',
+    'description' => 'Adjust itomic hosting ettings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ihf_staging_admin_settings'),
+    'access arguments' => array('access ihf settings'),
+  );
+  
+  $menu['ihf/clear'] = array(
+    'title' => 'Process a file',
+    'page callback' => 'ihf_clear_session',
+    'access arguments' => array(''),
+    'access callback' => true,
+    'type' => MENU_CALLBACK,
+  );
+  
+  return $menu;
+}
+
+
+/**
+ * ihf module form settings
+ *
+ * @return array
+ */
+function ihf_staging_admin_settings() {
+  $form = array();
+  
+  $form['ihfdev'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Itomic Development server settings'),
+  );
+  
+  $form['ihfdev']['ihf_disable_caching'] = array (
+    '#type' => 'checkbox',
+    '#title' => 'Disable caching settings',
+    '#description' => 'If you are constantly download the database from a live source, you may to disable the 
+      performance settings such as caching & js/css aggregation. Turning this option on, will disable these 
+      automatically. Note: Every time it disables them, you\'ll see a warning message.',
+    '#default_value' => variable_get('ihf_disable_caching', 0)
+  );
+  
+  $form['ihf'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Itomic staging server settings'),
+  );
+  
+  $form['ihf']['ihf_staging_protect'] = array (
+    '#type' => 'checkbox',
+    '#title' => 'Protect Staging website',
+    '#description' => t('When the address below is visited, the user will be prompted to enter a passphrase before being allowed access to the website.'),
+    '#default_value' => variable_get('ihf_staging_protect', 0)
+  );
+  
+  $form['ihf']['ihf_staging_address'] = array (
+    '#type' => 'textfield',
+    '#title' => t('Staging Server Address'),
+    '#description' => 'Specify the URL of the staging server website address. If the site is accessed on this URL and the Protect option is switched on, then the user will be first authorised. Partial domains are supported, <em>ie, itomicpowered.com will protect foo.itomicpowered.com and www.foo.itomicpowered.com</em>. Do not include http://. Can include multiple addresses separated by a comma.',
+    '#default_value' => variable_get('ihf_staging_address', IHF_STAGING_DEFAULT_DOMAIN),
+    '#size' => 30
+  );
+  
+  $form['ihf']['ihf_staging_passphrase'] = array (
+    '#type' => 'textfield',
+    '#title' => t('Passphrase'),
+    '#description' => 'The generic passphrase for developers and clients to enter before gaining access to the site.',
+    '#default_value' => variable_get('ihf_staging_passphrase', IHF_STAGING_DEFAULT_PASSPHRASE),
+    '#size' => 30
+  );
+
+  $form['ihf']['ihf_staging_template'] = array (
+    '#type' => 'radios',
+    '#title' => t('Template'),
+    '#description' => 'The template to use for the staging login page',
+    '#default_value' => variable_get('ihf_staging_template', 'ihf-comingsoon'),
+    '#options' => array('ihf-comingsoon' => 'Coming Soon', 'ihf-uat' => 'UAT'),
+  );
+
+  $form['ihfother'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Other Settings'),
+  );
+
+  $form['ihfother']['ihf_redirect_www'] = array (
+    '#type' => 'checkbox',
+    '#title' => 'Redirect non root address URL to www URL.',
+    '#description' => 'This should only be set when the site is live. It should be noticed, that if the staging address, above is set, this will be ignored.',
+    '#default_value' => variable_get('ihf_redirect_www', 0)
+  );
+  
+  $form['ihfother']['ihf_auth_ssl'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Force HTTPS for login page and authenticated sessions?'),
+    '#description' => t('Forces an encrypted connection for the login page and any authenticated page visits.'),
+    '#default_value' => variable_get('ihf_auth_ssl', FALSE),
+  );
+  
+  // Make sure that SSL is actually available so that we don't whitescreen the site.
+  $req = drupal_http_request('https://'. $_SERVER['SERVER_NAME']);
+  if (!in_array($req->code, array(200, 301, 302, 403, 404))) {
+    $form['ihfother']['ihf_auth_ssl']['#disabled'] = TRUE;
+    $form['ihfother']['ihf_auth_ssl']['#description'] .= '<strong>'. t('SSL must be working on this domain for this option to be available.') .'</strong>';
+  }
+
+  return system_settings_form($form);
+}
+
+
+/**
+ * drupal init hook implementation.
+ *
+ */
+function ihf_staging_init() {
+  ihf_staging_checkstaging();
+
+  ihf_staging_checkredirect();
+  
+  ihf_staging_checkcaching();
+  
+  ihf_staging_checkssl();
+}
+
+
+/**
+ * Determine if visitor is authorised to access the site if its in staging mode.
+ *
+ */
+function ihf_staging_checkstaging() {
+  global $user;
+  
+  $request_uri = request_uri();
+  preg_match("/\.(\w+)/", $request_uri, $matchExt);
+  
+  if(!empty($matchExt) && !empty($matchExt[1])){
+	  return;
+  }
+
+  // only check for staging if not running cron/xmlrpc/updates.php
+  if ($_SERVER["SCRIPT_NAME"] == base_path() . "index.php") {
+  
+    // don't do the tests if we're root user.
+    if ($user->uid != "1") {
+    
+      // only run when the option is turned on in Site Config->Itomic Hosting Settings.
+      if (variable_get('ihf_staging_protect', 1)) {
+
+        // if on staging URL and no cookie set then show message.
+        if (strstr(variable_get('ihf_staging_address', IHF_STAGING_DEFAULT_DOMAIN), $_SERVER['SERVER_NAME'])) {
+
+          $passphrase = (!empty($_SESSION["ihf_user_passphrase"])) ? $_SESSION["ihf_user_passphrase"] : '';
+          
+          if ($passphrase == variable_get('ihf_staging_passphrase', IHF_STAGING_DEFAULT_PASSPHRASE)) {
+            return; // all good!
+          }
+          else {
+            
+            sleep(2); // just to slow down brute force attacks slightly.
+            
+            if (isset($_POST['passphrase']) && $_POST['passphrase'] == variable_get('ihf_staging_passphrase', IHF_STAGING_DEFAULT_PASSPHRASE)) {
+              
+              $_SESSION["ihf_user_passphrase"] = $_POST['passphrase'];
+              return;
+              
+            }
+            else {
+              //$output = file_get_contents(drupal_get_path('module', 'ihf') . '/comingsoon.tpl.php');        
+              $output = theme("ihf_staging_template");
+    
+              echo $output;
+              exit;
+            }
+            // if submitted passphrase not set.
+          } 
+          // if we're on the staging URL.
+        }
+        // if staging switched on 
+      }
+      // if not root user 
+    }
+    // only if index.php 
+  } 
+}
+
+
+function ihf_staging_checkcaching() {
+  if (isset($_SERVER['SERVER_ADDR']) && $_SERVER["SCRIPT_NAME"] == base_path() . "index.php" &&
+      variable_get('ihf_disable_caching', 0)) {
+    _ihf_staging_check_cache_setting('cache', CACHE_DISABLED);
+    _ihf_staging_check_cache_setting('preprocess_css', 0);
+    _ihf_staging_check_cache_setting('preprocess_js', 0);
+  }
+}
+
+
+function _ihf_staging_check_cache_setting($var, $val) {
+  if (variable_get($var, '') != '' && variable_get($var, '') != $val) {
+    variable_set($var, $val);
+    drupal_set_message("ihf_disable_caching: disabling $var");
+  }
+}
+
+
+function ihf_staging_checkredirect() {
+  if (isset($_SERVER['SERVER_ADDR']) && $_SERVER["SCRIPT_NAME"] == base_path() . "index.php") {
+    if (variable_get('ihf_redirect_www', FALSE)) {
+      if (strpos($_SERVER['SERVER_NAME'], "www") === false) {
+        header("Location: http://www." . $_SERVER['SERVER_NAME'] . "");
+        exit;
+      } // if no www found in server address
+    } // if variable is on
+  } // if we're on index.php
+}
+
+/**
+ * Redirects the browser to an encrypted version of the page if configured
+ */
+function ihf_staging_checkssl() {
+  if (variable_get('ihf_auth_ssl', FALSE)) {
+    if (!$_SERVER['HTTPS']) {
+      if (in_array(trim($_GET['q'], '/'), array('user', 'user/login')) || user_is_logged_in()) {
+        $url = array(
+          'protocol' => 'https://',
+          'host' => $_SERVER['HTTP_HOST'],
+          'url' => $_SERVER['REQUEST_URI'],
+        );
+        drupal_goto(implode($url));
+      } // On the login page or already logged in
+    } // Page being viewed is not encrypted
+  } // Forced SSL is enabled
+}
+
+
+/**
+ * Used to clear passphrase session data - helpful for testing,
+ */
+function ihf_staging_clear_session() {
+  $_SESSION["ihf_user_passphrase"] = "";
+  drupal_goto('');
+}
+
+/**
+ * Implement hook_theme
+ */
+function ihf_staging_theme() {
+  $items = array(
+    'ihf_staging_template' => array(
+      'template'  => variable_get('ihf_staging_template', 'ihf-comingsoon'),
+      'arguments' => array(),
+    ),
+  );
+  
+  return $items;
+}

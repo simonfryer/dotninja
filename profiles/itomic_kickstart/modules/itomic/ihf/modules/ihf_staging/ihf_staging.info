@@ -1,0 +1,7 @@
+name = Staging
+description = Provides staging and UAT functionality. Also things like SSL and www. prefix redirection.
+core = 7.x
+package = Itomic
+version = 7.x
+
+dependencies[] = ihf

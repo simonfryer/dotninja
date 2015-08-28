@@ -1,0 +1,5 @@
+name = Helper Functions
+description = Helper functions for use by Itomic staff when performing development work.
+core = 7.x
+package = Itomic
+version = 7.x

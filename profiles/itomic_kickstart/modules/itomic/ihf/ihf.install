@@ -1,0 +1,16 @@
+<?php
+
+/**
+ * @file
+ *  Contains (un)installation hooks and updates functions
+ */
+
+/**
+ * Simply enables the ihf_staging module, as this was what this module did before a major refactor.
+ */
+function ihf_update_7001() {
+  module_list(TRUE);
+
+  $modules[] = 'ihf_staging';
+  module_enable($modules);
+}

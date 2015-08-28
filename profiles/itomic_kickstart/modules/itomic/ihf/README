@@ -1,0 +1,17 @@
+Itomic Hosting Functions module for Drupal
+------------------------------------------
+
+Provides the following functionality:
+  - Various helper functions for development and staging environments
+  - Country array function
+  - Debugging functions
+  - Ability to force HTTPS for authenticated sessions and the login page
+  - Reusable panels functionality
+
+CHANGELOG:
+  - Originally created sometime in 2010 (Alex)
+  - Added to Git on 24/05/2011 (Alex)
+  - HTTPS redirection added on 16/8/2011 (Nick)
+  - Drupal 7 port on 11/9/2011 (Nick)
+  - Split out functionality to submodules 11/10/2011 (Nick)
+

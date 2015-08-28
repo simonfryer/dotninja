@@ -1,0 +1,5 @@
+name = Custom Panels
+description = Cool panels layouts, styles and other various panels plugins.
+core = 7.x
+package = Itomic
+version = 7.x

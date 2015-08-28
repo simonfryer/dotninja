@@ -1,0 +1,38 @@
+name = Ninja
+description = A minimalist theme based of Writer
+
+core = 7.x
+
+stylesheets[all][] = css/style.css
+scripts[] = js/script.js
+scripts[] = js/fastclick.js
+
+; Many regions are provided, but use them wisely. Less is more.
+regions[pre_header] = Pre-Header
+regions[header] = Header
+regions[post_header] = Post-Header
+regions[highlighted] = Highlighted
+regions[help] = Help
+regions[content] = Content
+regions[footer_top] = Footer Top
+regions[footer_left] = Footer Left
+regions[footer_right] = Footer Right
+regions[footer_bottom] = Footer Bottom
+regions[footer_message] = Footer Message
+
+; Features supported by Writer.
+features[] = logo
+features[] = name
+features[] = slogan
+features[] = favicon
+features[] = main_menu
+features[] = secondary_menu
+
+; Settings
+settings[code_snippets] = 'simple'
+settings[content_width] = '630'
+settings[toggle_logo] = 0
+settings[toggle_slogan] = 0
+settings[toggle_name] = 1
+settings[toggle_main_menu] = 1
+settings[toggle_secondary_menu] = 1
