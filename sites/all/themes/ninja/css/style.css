@@ -717,6 +717,11 @@ padding: 0 0.5em;
     font-size: 0.75em;
   }
 
+  /* Adjust slogan */
+  #site-slogan {
+    margin-top:0;
+  }
+
   /* Minor layout changes */
   .site-name-wrap {
     text-align: center;
@@ -750,6 +755,8 @@ padding: 0 0.5em;
     padding: 14px;
     text-align: center;
     text-transform: uppercase;
+    border-top:1px solid #AAA;
+    border-bottom:1px solid #AAA;
   }
 
   .js #main-menu {
@@ -794,6 +801,12 @@ padding: 0 0.5em;
   .head-links a.active {
     /* removed default link underlining */
     border-bottom: none;
+  }
+}
+
+@media screen and (max-width: 400px) {
+  #site-name a img {
+    width:95%;
   }
 }
 
