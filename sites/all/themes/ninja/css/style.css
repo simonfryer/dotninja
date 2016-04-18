@@ -197,6 +197,13 @@ h1 {
 
 h2 {
   font-size: 1.9em; /* 20px * 1.9 = 38px */
+  border-left: 2px solid #888;
+  padding-left:22px;
+}
+
+div.field-name-body h2 {
+  border-left: 0;
+  padding-left: 0;
 }
 
 h3 {
@@ -275,9 +282,14 @@ table {
 
 th,
 td {
-  border: solid 1px #ccc;
+  border: solid 1px #666;
   padding: 5px 11px;
   vertical-align: top;
+}
+
+th {
+  background: #ccc;
+  font-weight: bold;
 }
 
 #wrapper {
@@ -412,6 +424,8 @@ textarea {
   text-transform: uppercase;
   margin-bottom: 0;
   margin-top: -10px;
+  border: 0;
+  padding-left: 0;
 }
 
 .comment p {
@@ -515,15 +529,16 @@ padding: 0 0.5em;
 .ninja-date {
   color: #888888;
   display: block;
-  font-family: 'Lato', Helvetica, sans-serif;
-  font-weight: 700;
+  font-family: Verdana, sans-serif;
+  letter-spacing: -2px;
+  font-size:1.3em;
   left: -190px;
   line-height: 1.2em;
   position: absolute;
   text-align: right;
   text-transform: uppercase;
   top: 11px;
-  width: 150px;
+  width: 160px;
 }
 
 .main-content {
@@ -583,14 +598,23 @@ padding: 0 0.5em;
  * Footer
  */
 .page-footer {
-  float: right;
   padding: 1.62em 0;
   width: 100%;
+  background: #eee;
+  position: absolute;
+  left: 0;
+  margin-top: 20px;
+}
+
+.page-footer .foot-mid-wrap {
+  width: 800px;
+  margin: 0 auto;
 }
 
 #footer_left {
   float: left;
   width: 49%;
+  padding-top:10px;
 }
 #footer_right {
   float: right;
@@ -636,6 +660,18 @@ padding: 0 0.5em;
   font-size: 1em;
 }
 
+footer.page-footer .block-widgets .widgets-element-horizontal {
+  padding-right:12px;
+}
+
+.page-footer .block .content p {
+  color: #292929;
+  font-family: 'Lato', Helvetica, sans-serif;
+  font-size: 0.62em;
+  text-decoration: none;
+  line-height: 22px;
+}
+
 /**
  * Adjustments for small devices
  */
@@ -669,16 +705,38 @@ padding: 0 0.5em;
   }
 
   .meta time.ninja-date {
-    padding-bottom: 1.62em;
+    padding-bottom: 0.2em;
   }
 
   .main-content > h1 {
     margin: 25px 0;
   }
 
+  .content h2 {
+    border:0;
+    padding:0;
+    margin: 1em 0 0.2em 0;
+  }
+
   .ninja #wrapper {
     padding: 0 16px;
   }
+
+  .page-footer .foot-mid-wrap {
+    width:auto;
+    padding:0 15px;
+  }
+
+  ul.inline li {
+    padding:0;
+  }
+
+  li.node-readmore a {
+    display: inline-block;
+    border: 1px solid #ccc;
+    padding: 8px 15px;
+  }
+
 }
 
 @media screen and (max-width: 580px) {
@@ -757,6 +815,8 @@ padding: 0 0.5em;
     text-transform: uppercase;
     border-top:1px solid #AAA;
     border-bottom:1px solid #AAA;
+    border-left:0;
+
   }
 
   .js #main-menu {
@@ -777,6 +837,7 @@ padding: 0 0.5em;
     margin-bottom: -1px;
     padding: 0;
     width: 100%;
+    background:#eee;
   }
 
   #main-menu li a {
@@ -785,6 +846,9 @@ padding: 0 0.5em;
     margin: 0;
     padding: 14px;
     text-align: center;
+  }
+  #main-menu li a:hover {
+    text-decoration:underline;
   }
 
   #menu-arrow {
